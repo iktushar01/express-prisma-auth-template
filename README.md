@@ -1,22 +1,15 @@
-# Acadex Server
+# Express Prisma Auth Server
 
-Acadex Server is the developer-friendly backend for Acadex. It powers authentication, classroom management, subjects, folders, notes, favorites, comments, notices, and admin workflows through a modular Express + Prisma API.
-
-## Live URLs
-
-- Production API Root: [https://acadex-server.vercel.app](https://acadex-server.vercel.app)
-- Versioned API Base: [https://acadex-server.vercel.app/api/v1](https://acadex-server.vercel.app/api/v1)
-- Production Client: [https://acadex-client.vercel.app](https://acadex-client.vercel.app)
+Express Prisma Auth Server is the developer-friendly backend for Starter. It powers authentication and admin workflows through a modular Express + Prisma API.
 
 ## Features
 
 - Better Auth based auth system with email/password and Google login
 - JWT access and refresh token flow
 - Prisma-powered PostgreSQL data layer
-- Modular route structure for auth, users, classrooms, subjects, folders, notes, favorites, comments, notices, and admins
+- Modular route structure for auth, users, and admins
 - Cloudinary-based media upload pipeline
 - OTP email verification and password reset flow
-- Classroom membership, CR management, and note approval support
 - TypeScript-first codebase with validation and reusable utilities
 
 ## Technologies Used
@@ -95,11 +88,4 @@ npm run start
 
 - `/api/v1/auth`
 - `/api/v1/users`
-- `/api/v1/classrooms`
-- `/api/v1/subjects`
-- `/api/v1/folders`
-- `/api/v1/notes`
-- `/api/v1/favorites`
-- `/api/v1/comments`
-- `/api/v1/notices`
 - `/api/v1/admins`
