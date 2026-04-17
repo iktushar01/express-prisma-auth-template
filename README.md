@@ -1,4 +1,4 @@
-# Express Prisma Auth Server
+# Express Prisma Auth Server...
 
 Express Prisma Auth Server is the developer-friendly backend for Starter. It powers authentication and admin workflows through a modular Express + Prisma API.
 
