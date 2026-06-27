@@ -40,3 +40,10 @@ export type StockMovementType =
 
 export const EventStatus = prismaModule.EventStatus;
 export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus];
+
+export const EmployeeStatus = prismaModule.EmployeeStatus;
+export type EmployeeStatus = (typeof EmployeeStatus)[keyof typeof EmployeeStatus];
+
+export const VendorPaymentType = prismaModule.VendorPaymentType;
+export type VendorPaymentType =
+    (typeof VendorPaymentType)[keyof typeof VendorPaymentType];

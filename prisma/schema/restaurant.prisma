@@ -16,6 +16,8 @@ model Property {
   website         String?
   registrationTIN String?
   companyLogo     String?
+  vatPercent      Decimal  @default(0) @db.Decimal(5, 2)
+  serviceChargePercent Decimal @default(0) @db.Decimal(5, 2)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

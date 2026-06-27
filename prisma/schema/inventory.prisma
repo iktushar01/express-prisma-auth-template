@@ -63,6 +63,7 @@ model Vendor {
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   purchases      Purchase[]
+  payments       VendorPayment[]
 
   @@map("vendors")
 }
@@ -133,6 +134,7 @@ model Purchase {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   items        PurchaseItem[]
+  payments     VendorPayment[]
 
   @@index([vendorId])
   @@map("purchases")
@@ -186,4 +188,24 @@ model Event {
   updatedAt     DateTime    @updatedAt
 
   @@map("events")
+}
+
+model VendorPayment {
+  id         String            @id @default(uuid())
+  vendorId   String
+  vendor     Vendor            @relation(fields: [vendorId], references: [id])
+  purchaseId String?
+  purchase   Purchase?         @relation(fields: [purchaseId], references: [id])
+  type       VendorPaymentType @default(PAY)
+  paid       Decimal           @db.Decimal(12, 2)
+  discount   Decimal           @default(0) @db.Decimal(12, 2)
+  due        Decimal           @default(0) @db.Decimal(12, 2)
+  paymentDate DateTime         @default(now())
+  note       String            @default("")
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([vendorId])
+  @@index([purchaseId])
+  @@map("vendor_payments")
 }

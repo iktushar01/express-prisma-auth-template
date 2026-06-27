@@ -17,4 +17,6 @@ export const updatePropertyZodSchema = z.object({
     website: z.string().optional(),
     registrationTIN: z.string().optional(),
     companyLogo: z.string().optional(),
+    vatPercent: z.coerce.number().min(0).max(100).optional(),
+    serviceChargePercent: z.coerce.number().min(0).max(100).optional(),
 });

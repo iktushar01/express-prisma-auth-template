@@ -1,0 +1,63 @@
+model Bank {
+  id          String       @id @default(uuid())
+  name        String
+  description String       @default("")
+  isDeleted   Boolean      @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  branches    BankBranch[]
+
+  @@map("banks")
+}
+
+model BankBranch {
+  id          String        @id @default(uuid())
+  bankId      String
+  bank        Bank          @relation(fields: [bankId], references: [id])
+  branchName  String
+  address     String        @default("")
+  isDeleted   Boolean       @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  accounts    BankAccount[]
+
+  @@index([bankId])
+  @@map("bank_branches")
+}
+
+model BankAccount {
+  id          String            @id @default(uuid())
+  branchId    String
+  branch      BankBranch        @relation(fields: [branchId], references: [id])
+  accountName String
+  accountNo   String
+  note        String            @default("")
+  isDeleted   Boolean           @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  transactions BankTransaction[]
+
+  @@index([branchId])
+  @@map("bank_accounts")
+}
+
+model BankTransaction {
+  id        String              @id @default(uuid())
+  accountId String
+  account   BankAccount         @relation(fields: [accountId], references: [id])
+  type      BankTransactionType
+  amount    Decimal             @db.Decimal(12, 2)
+  date      DateTime
+  note      String              @default("")
+  isDeleted Boolean             @default(false)
+  deletedAt DateTime?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@index([accountId])
+  @@index([date])
+  @@map("bank_transactions")
+}

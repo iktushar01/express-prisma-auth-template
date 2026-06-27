@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PurchaseStatus, StockMovementType, EventStatus } from "../../lib/prisma-exports";
+import { PurchaseStatus, StockMovementType, EventStatus, VendorPaymentType } from "../../lib/prisma-exports";
 
 export const listQuerySchema = z.object({
     search: z.string().optional(),
@@ -102,4 +102,14 @@ export const updateEventSchema = createEventSchema.partial();
 
 export const listEventsQuerySchema = listQuerySchema.extend({
     status: z.nativeEnum(EventStatus).optional(),
+});
+
+export const createVendorPaymentSchema = z.object({
+    vendorId: z.string().uuid(),
+    purchaseId: z.string().uuid().optional(),
+    type: z.nativeEnum(VendorPaymentType).optional().default(VendorPaymentType.PAY),
+    paid: z.coerce.number().min(0.01),
+    discount: z.coerce.number().min(0).optional().default(0),
+    paymentDate: z.string().optional(),
+    note: z.string().optional(),
 });

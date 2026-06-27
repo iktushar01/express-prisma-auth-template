@@ -191,3 +191,16 @@ export const deleteEvent = catchAsync(async (req, res) => {
     await InventoryService.deleteEvent(req.params.id);
     ok(res, null, "Event deleted");
 });
+
+export const listVendorPayments = catchAsync(async (req, res) => {
+    const result = await InventoryService.listVendorPayments(req.query as any);
+    ok(res, result.data, "Vendor payments fetched", result.meta);
+});
+
+export const createVendorPayment = catchAsync(async (req, res) => {
+    ok(res, await InventoryService.createVendorPayment(req.body), "Vendor payment created", undefined, StatusCodes.CREATED);
+});
+
+export const getVendorsWithDuePurchases = catchAsync(async (_req, res) => {
+    ok(res, await InventoryService.getVendorsWithDuePurchases(), "Vendors with due purchases fetched");
+});

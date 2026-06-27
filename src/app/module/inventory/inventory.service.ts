@@ -4,6 +4,7 @@ import {
     EventStatus,
     PurchaseStatus,
     StockMovementType,
+    VendorPaymentType,
 } from "../../lib/prisma-exports";
 import { StatusCodes } from "http-status-codes";
 
@@ -539,6 +540,155 @@ const updateEvent = async (id: string, payload: Partial<{
 const deleteEvent = async (id: string) =>
     prisma.event.update({ where: { id }, data: { isDeleted: true, deletedAt: new Date() } });
 
+// ─── Vendor Payments ──────────────────────────────────────────────────────────
+
+const formatVendorPayment = (payment: {
+    id: string;
+    type: VendorPaymentType;
+    paid: { toString: () => string };
+    discount: { toString: () => string };
+    due: { toString: () => string };
+    paymentDate: Date;
+    note: string;
+    vendor: { id: string; name: string };
+    purchase: { id: string; memoNo: string } | null;
+}) => ({
+    id: payment.id,
+    vendorId: payment.vendor.id,
+    vendorName: payment.vendor.name,
+    purchaseId: payment.purchase?.id ?? null,
+    memoNo: payment.purchase?.memoNo ?? "",
+    type: payment.type,
+    paid: Number(payment.paid),
+    discount: Number(payment.discount),
+    due: Number(payment.due),
+    paymentDate: payment.paymentDate.toISOString(),
+    note: payment.note,
+});
+
+const listVendorPayments = async (query: { search?: string; vendorId?: string; page?: number; limit?: number }) => {
+    const { page, limit, skip, meta } = paginate(query);
+    const where = {
+        ...(query.vendorId ? { vendorId: query.vendorId } : {}),
+        ...(query.search ? {
+            OR: [
+                { note: { contains: query.search, mode: "insensitive" as const } },
+                { vendor: { name: { contains: query.search, mode: "insensitive" as const } } },
+                { purchase: { memoNo: { contains: query.search, mode: "insensitive" as const } } },
+            ],
+        } : {}),
+    };
+    const [rows, total] = await Promise.all([
+        prisma.vendorPayment.findMany({
+            where,
+            include: {
+                vendor: { select: { id: true, name: true } },
+                purchase: { select: { id: true, memoNo: true } },
+            },
+            orderBy: { paymentDate: "desc" },
+            skip,
+            take: limit,
+        }),
+        prisma.vendorPayment.count({ where }),
+    ]);
+    return { data: rows.map(formatVendorPayment), meta: meta(total) };
+};
+
+const createVendorPayment = async (payload: {
+    vendorId: string;
+    purchaseId?: string;
+    type?: VendorPaymentType;
+    paid: number;
+    discount?: number;
+    paymentDate?: string;
+    note?: string;
+}) => {
+    const vendor = await prisma.vendor.findFirst({ where: { id: payload.vendorId, isDeleted: false } });
+    if (!vendor) throw new AppError(StatusCodes.BAD_REQUEST, "Vendor not found");
+
+    return prisma.$transaction(async (tx) => {
+        let remainingDue = 0;
+
+        if (payload.purchaseId) {
+            const purchase = await tx.purchase.findFirst({
+                where: { id: payload.purchaseId, vendorId: payload.vendorId },
+            });
+            if (!purchase) throw new AppError(StatusCodes.BAD_REQUEST, "Purchase not found for this vendor");
+
+            remainingDue = Math.max(
+                Number(purchase.due) - (payload.paid + (payload.discount ?? 0)),
+                0,
+            );
+
+            await tx.purchase.update({
+                where: { id: purchase.id },
+                data: {
+                    due: remainingDue,
+                    status: remainingDue === 0
+                        ? PurchaseStatus.PAID
+                        : PurchaseStatus.PARTIAL,
+                },
+            });
+        }
+
+        const payment = await tx.vendorPayment.create({
+            data: {
+                vendorId: payload.vendorId,
+                purchaseId: payload.purchaseId ?? null,
+                type: payload.type ?? VendorPaymentType.PAY,
+                paid: payload.paid,
+                discount: payload.discount ?? 0,
+                due: remainingDue,
+                paymentDate: payload.paymentDate ? new Date(payload.paymentDate) : new Date(),
+                note: payload.note ?? "",
+            },
+            include: {
+                vendor: { select: { id: true, name: true } },
+                purchase: { select: { id: true, memoNo: true } },
+            },
+        });
+
+        return formatVendorPayment(payment);
+    });
+};
+
+const getVendorsWithDuePurchases = async () => {
+    const vendors = await prisma.vendor.findMany({
+        where: {
+            isDeleted: false,
+            purchases: { some: { due: { gt: 0 } } },
+        },
+        include: {
+            purchases: {
+                where: { due: { gt: 0 } },
+                select: {
+                    id: true,
+                    memoNo: true,
+                    total: true,
+                    due: true,
+                    purchaseDate: true,
+                },
+                orderBy: { purchaseDate: "desc" },
+            },
+        },
+        orderBy: { name: "asc" },
+    });
+
+    return vendors.map((vendor) => ({
+        id: vendor.id,
+        name: vendor.name,
+        address: vendor.address ?? "",
+        contact: vendor.contact ?? "",
+        memos: vendor.purchases.map((purchase) => ({
+            id: purchase.id,
+            no: purchase.memoNo,
+            payable: Number(purchase.due),
+            total: Number(purchase.total),
+            purchaseDate: purchase.purchaseDate.toISOString(),
+        })),
+    }));
+};
+
 export const InventoryService = {
     listCategories, getCategoryById, createCategory, updateCategory, deleteCategory,
     listSubCategories, getSubCategoryById, createSubCategory, updateSubCategory, deleteSubCategory,
@@ -550,4 +700,5 @@ export const InventoryService = {
     stockIn, stockOut, moveStock, listStockByLocation,
     listPurchases, createPurchase,
     listEvents, getTodayEvents, getEventById, createEvent, updateEvent, deleteEvent,
+    listVendorPayments, createVendorPayment, getVendorsWithDuePurchases,
 };

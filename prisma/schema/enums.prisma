@@ -58,6 +58,22 @@ enum EventStatus {
   CANCELLED
 }
 
+enum BankTransactionType {
+  DEPOSIT
+  WITHDRAW
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  RETIRED
+  INACTIVE
+}
+
+enum VendorPaymentType {
+  PAY
+  CASHBACK
+}
+
 enum UserStatus {
   ACTIVE
   INACTIVE

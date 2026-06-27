@@ -12,6 +12,10 @@ import { OrderRoute } from "../module/order/order.route";
 import { DashboardRoute } from "../module/dashboard/dashboard.route";
 import { InventoryRoute } from "../module/inventory/inventory.route";
 import { FinanceRoute } from "../module/finance/finance.route";
+import { HrRoute } from "../module/hr/hr.route";
+import { BankRoute } from "../module/bank/bank.route";
+import { DueRoute } from "../module/due/due.route";
+import { ReportRoute } from "../module/report/report.route";
 
 const router = express.Router();
 
@@ -28,5 +32,9 @@ router.use("/orders", OrderRoute);
 router.use("/dashboard", DashboardRoute);
 router.use("/inventory", InventoryRoute);
 router.use("/finance", FinanceRoute);
+router.use("/hr", HrRoute);
+router.use("/bank", BankRoute);
+router.use("/due", DueRoute);
+router.use("/reports", ReportRoute);
 
 export const IndexRoute = router;

@@ -9,6 +9,7 @@ import {
     createEventSchema,
     createInventoryItemSchema,
     createPurchaseSchema,
+    createVendorPaymentSchema,
     createStockLocationSchema,
     createSubCategorySchema,
     createUnitSchema,
@@ -58,6 +59,7 @@ router.patch("/units/:id", auth, v(idParamSchema, "params"), v(createUnitSchema.
 router.delete("/units/:id", auth, v(idParamSchema, "params"), C.deleteUnit);
 
 // Vendors
+router.get("/vendors/due-purchases", auth, C.getVendorsWithDuePurchases);
 router.get("/vendors", auth, v(listQuerySchema, "query"), C.listVendors);
 router.post("/vendors", auth, v(createVendorSchema), C.createVendor);
 router.get("/vendors/:id", auth, v(idParamSchema, "params"), C.getVendorById);
@@ -88,6 +90,10 @@ router.post("/stock/move", auth, v(moveStockSchema), C.moveStock);
 // Purchases
 router.get("/purchases", auth, v(listQuerySchema, "query"), C.listPurchases);
 router.post("/purchases", auth, v(createPurchaseSchema), C.createPurchase);
+
+// Vendor Payments
+router.get("/vendor-payments", auth, v(listQuerySchema, "query"), C.listVendorPayments);
+router.post("/vendor-payments", auth, v(createVendorPaymentSchema), C.createVendorPayment);
 
 // Events
 router.get("/events", auth, v(listEventsQuerySchema, "query"), C.listEvents);
