@@ -41,36 +41,36 @@ const foods = [
 async function main() {
     const existingCategories = await prisma.foodCategory.count();
 
-    if (existingCategories > 0) {
-        console.log("Seed skipped — food categories already exist.");
-        return;
+    if (existingCategories === 0) {
+        const createdCategories = await Promise.all(
+            categories.map((category) =>
+                prisma.foodCategory.create({ data: category }),
+            ),
+        );
+
+        const appetizerCategory = createdCategories[0];
+
+        await prisma.food.createMany({
+            data: foods.map((food) => ({
+                ...food,
+                categoryId: appetizerCategory.id,
+                availability: Availability.AVAILABLE,
+            })),
+        });
+
+        await prisma.property.create({
+            data: {
+                propertyName: "DineFlow Restaurant",
+                city: "Dhaka",
+                country: "Bangladesh",
+            },
+        });
+
+        console.log("Restaurant seed data created successfully.");
+    } else {
+        console.log("Food seed skipped — already exists.");
     }
 
-    const createdCategories = await Promise.all(
-        categories.map((category) =>
-            prisma.foodCategory.create({ data: category }),
-        ),
-    );
-
-    const appetizerCategory = createdCategories[0];
-
-    await prisma.food.createMany({
-        data: foods.map((food) => ({
-            ...food,
-            categoryId: appetizerCategory.id,
-            availability: Availability.AVAILABLE,
-        })),
-    });
-
-    await prisma.property.create({
-        data: {
-            propertyName: "DineFlow Restaurant",
-            city: "Dhaka",
-            country: "Bangladesh",
-        },
-    });
-
-    console.log("Restaurant seed data created successfully.");
     await seedDineAndWaiters();
 }
 
