@@ -73,6 +73,7 @@ async function main() {
 
     await seedDineAndWaiters();
     await seedInventoryAndEvents();
+    await seedFinance();
 }
 
 async function seedDineAndWaiters() {
@@ -220,6 +221,40 @@ async function seedInventoryAndEvents() {
     });
 
     console.log("Inventory and events seeded.");
+}
+
+async function seedFinance() {
+    const existing = await prisma.incomeHead.count();
+    if (existing > 0) {
+        console.log("Finance seed skipped — already exists.");
+        return;
+    }
+
+    const incomeHead = await prisma.incomeHead.create({
+        data: { name: "Miscellaneous Income", description: "Other income sources" },
+    });
+    await prisma.incomeEntry.create({
+        data: {
+            headId: incomeHead.id,
+            amount: 500,
+            note: "Sample income",
+            date: new Date(),
+        },
+    });
+
+    const expenseHead = await prisma.expenseHead.create({
+        data: { name: "Staff Bazar", description: "Staff purchases" },
+    });
+    await prisma.expenseEntry.create({
+        data: {
+            headId: expenseHead.id,
+            amount: 200,
+            note: "Weekly supplies",
+            date: new Date(),
+        },
+    });
+
+    console.log("Finance income/expense seeded.");
 }
 
 main()

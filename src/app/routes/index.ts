@@ -11,6 +11,7 @@ import { WorkPeriodRoute } from "../module/workPeriod/workPeriod.route";
 import { OrderRoute } from "../module/order/order.route";
 import { DashboardRoute } from "../module/dashboard/dashboard.route";
 import { InventoryRoute } from "../module/inventory/inventory.route";
+import { FinanceRoute } from "../module/finance/finance.route";
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.use("/work-periods", WorkPeriodRoute);
 router.use("/orders", OrderRoute);
 router.use("/dashboard", DashboardRoute);
 router.use("/inventory", InventoryRoute);
+router.use("/finance", FinanceRoute);
 
 export const IndexRoute = router;

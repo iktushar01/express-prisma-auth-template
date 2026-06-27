@@ -1,0 +1,59 @@
+model IncomeHead {
+  id          String        @id @default(uuid())
+  name        String
+  description String        @default("")
+  isDeleted   Boolean       @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  entries     IncomeEntry[]
+
+  @@map("income_heads")
+}
+
+model IncomeEntry {
+  id        String     @id @default(uuid())
+  headId    String
+  head      IncomeHead @relation(fields: [headId], references: [id])
+  amount    Decimal    @db.Decimal(12, 2)
+  note      String     @default("")
+  date      DateTime
+  isDeleted Boolean    @default(false)
+  deletedAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([headId])
+  @@index([date])
+  @@map("income_entries")
+}
+
+model ExpenseHead {
+  id          String         @id @default(uuid())
+  name        String
+  description String         @default("")
+  isDeleted   Boolean        @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  entries     ExpenseEntry[]
+
+  @@map("expense_heads")
+}
+
+model ExpenseEntry {
+  id        String      @id @default(uuid())
+  headId    String
+  head      ExpenseHead @relation(fields: [headId], references: [id])
+  amount    Decimal     @db.Decimal(12, 2)
+  note      String      @default("")
+  date      DateTime
+  isDeleted Boolean     @default(false)
+  deletedAt DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([headId])
+  @@index([date])
+  @@map("expense_entries")
+}
