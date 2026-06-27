@@ -74,6 +74,7 @@ async function main() {
     await seedDineAndWaiters();
     await seedInventoryAndEvents();
     await seedFinance();
+    await seedBankHrDue();
 }
 
 async function seedDineAndWaiters() {
@@ -255,6 +256,62 @@ async function seedFinance() {
     });
 
     console.log("Finance income/expense seeded.");
+}
+
+async function seedBankHrDue() {
+    const existing = await prisma.bank.count();
+    if (existing > 0) {
+        console.log("Bank/HR/Due seed skipped — already exists.");
+        return;
+    }
+
+    const bank = await prisma.bank.create({
+        data: { name: "DBBL", description: "Dutch Bangla Bank" },
+    });
+    const branch = await prisma.bankBranch.create({
+        data: { bankId: bank.id, branchName: "Halishahar", address: "Chittagong" },
+    });
+    const account = await prisma.bankAccount.create({
+        data: { branchId: branch.id, accountName: "Main Account", accountNo: "15141", note: "" },
+    });
+    await prisma.bankTransaction.create({
+        data: { accountId: account.id, type: "DEPOSIT", amount: 50000, date: new Date(), note: "Opening deposit" },
+    });
+
+    const designation = await prisma.hrDesignation.create({
+        data: { name: "General Manager", basicSalary: 25000 },
+    });
+    await prisma.hrDesignation.createMany({
+        data: [{ name: "Waiter", basicSalary: 12000 }, { name: "Cashier", basicSalary: 15000 }],
+    });
+    await prisma.hrEarningHead.create({ data: { name: "Bonus" } });
+    await prisma.hrDeductionHead.create({ data: { name: "Advance" } });
+
+    const employee = await prisma.employee.create({
+        data: {
+            name: "Amir Hossain",
+            contactNo: "01827123671",
+            designationId: designation.id,
+            status: "ACTIVE",
+            hasAccess: true,
+        },
+    });
+    await prisma.employeeBasicSalary.create({
+        data: { employeeId: employee.id, amount: 25000, date: new Date(), note: "Monthly basic" },
+    });
+
+    await prisma.guestDue.create({
+        data: {
+            guestName: "John Smith",
+            phoneNo: "0123456789",
+            totalDueAmount: 1500,
+            paymentMethod: "Cash",
+            payAmount: 500,
+            date: new Date(),
+        },
+    });
+
+    console.log("Bank, HR, and guest due seeded.");
 }
 
 main()
